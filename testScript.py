@@ -5,6 +5,6 @@ from test_server import testFunc
 
 
 q = Queue(connection=conn)
-result = q.enqueue(testFunc, 3, 5)
+job = q.enqueue(testFunc, 'hello world')
 
-print(result)
+print(job.result)
