@@ -1,1 +1,1 @@
-worker: python test_server.py
+worker: python worker.py
