@@ -1,4 +1,4 @@
 
+import sys
 
-
-print('test successful')
+sys.stdout.write('hello world')
