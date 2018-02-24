@@ -1,4 +1,4 @@
 
-import sys
 
-sys.stdout.write('hello world')
+def testFunc(x, y):
+    return x+y
