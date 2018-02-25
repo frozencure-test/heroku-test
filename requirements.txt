@@ -3,4 +3,4 @@ django==2.0.2
 scipy==1.0.0
 pandas==0.22.0
 numpy==1.13.3
-sklearn==0.19.1
+sklearn
