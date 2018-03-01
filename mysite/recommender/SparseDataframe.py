@@ -1,6 +1,6 @@
 from scipy import sparse
 import pandas as pd
-import sklearn.preprocessing as pp
+from sklearn import preprocessing as pp, metrics
 import numpy as np
 class SparseDataframe:
 
@@ -99,30 +99,57 @@ class SparseDataframe:
         filteredCounts = self.itemVoteCounts[self.itemVoteCounts > smallerThan]
         self.dataframe = self.dataframe[self.dataframe[self.dataframe.columns[0]].isin(filteredCounts.index.tolist())]
 
-    def cosineSimilarities(self):
-        col_normed_matrix = pp.normalize(self.csrMatrix)
-        return col_normed_matrix.T * col_normed_matrix
+    # def __setCosineMatrix(self):
+    #     #col_normed_matrix = pp.normalize(self.csrMatrix)
+    #     print('Cosine similarty matrix set')
+    #     matrix = self.csrMatrix
+    #     return self.sparse_corrcoef(matrix)
 
-    def getTopItems(self, top, postId, voteCountsUnder=float('inf')):
+
+    # def cosineSimilarities(self):
+    #     col_normed_matrix = pp.normalize(self.csrMatrix)
+    #     return col_normed_matrix.T * col_normed_matrix
+
+    def getTopItemsCosineSim(self, postId, top=5):
         if self.getItemIndexById(postId) == False:
             return False
-        similarities = self.cosineSimilarities()[self.getItemIndexById(postId),:]
-        similarities = similarities.toarray()
-        indexSim = None
-        idSim = []
-        for arr in similarities:
-            ind = np.argpartition(arr, -top-20)[-top-20:]
-            indexSim = [(i, arr[i]) for i in ind]
-        indexSim = [value for  value in indexSim if value[0] != self.getItemIndexById(postId)]
-        for elem in indexSim:
-            itemId = self.getItemIdFromIndex(elem[0])
-            if itemId is not None and self.getItemVoteCount(itemId) > voteCountsUnder:
-                indexSim.remove(elem)
+        index = self.getItemIndexById(postId)
+        indexVector = self.csrMatrix[:, index]
+        cosSim = metrics.pairwise.cosine_similarity(indexVector.T, self.csrMatrix.T , dense_output=False)
+        similaritiesContainer = cosSim.toarray()
+        similarities = similaritiesContainer[0]
+        ind = np.argpartition(similarities, -top - 1)[-top - 1:]
+        indexSim = [(i, similarities[i]) for i in ind]
+        indexSim = [value for value in indexSim if value[0] != self.getItemIndexById(postId)]
         indexSim.sort(key=lambda x: x[1], reverse=True)
-        for elem in indexSim[:top]:
+        idSim = []
+        for elem in indexSim:
             singleIdSim = []
             singleIdSim.append(self.getItemIdFromIndex(elem[0]))
             singleIdSim.append(elem[1])
-            print(singleIdSim)
             idSim.append(singleIdSim)
         return idSim
+
+    # def getTopItems(self, top, postId, voteCountsUnder=float('inf')):
+    #     if self.getItemIndexById(postId) == False:
+    #         return False
+    #     similarities = self.cosineMatrix[self.getItemIndexById(postId),:]
+    #     similarities = similarities.toarray()
+    #     indexSim = None
+    #     idSim = []
+    #     for arr in similarities:
+    #         ind = np.argpartition(arr, -top-20)[-top-20:]
+    #         indexSim = [(i, arr[i]) for i in ind]
+    #     indexSim = [value for  value in indexSim if value[0] != self.getItemIndexById(postId)]
+    #     for elem in indexSim:
+    #         itemId = self.getItemIdFromIndex(elem[0])
+    #         if itemId is not None and self.getItemVoteCount(itemId) > voteCountsUnder:
+    #             indexSim.remove(elem)
+    #     indexSim.sort(key=lambda x: x[1], reverse=True)
+    #     for elem in indexSim[:top]:
+    #         singleIdSim = []
+    #         singleIdSim.append(self.getItemIdFromIndex(elem[0]))
+    #         singleIdSim.append(elem[1])
+    #         print(singleIdSim)
+    #         idSim.append(singleIdSim)
+    #     return idSim

@@ -14,5 +14,6 @@ class RecommenderConfig(AppConfig):
     def ready(self):
         path = decompress()
         if self.sparseDf is None:
-            print('hello')
-            self.sparseDf = SparseDataframe(greaterThan=30, csvPath=path)
+            self.sparseDf = SparseDataframe(greaterThan=10, csvPath=path)
+            print('Dataframe initialized')
+            del(path)
